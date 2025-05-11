@@ -44,6 +44,12 @@ class OrderController extends Controller
      */
     public function create()
     {
+        // Obține furnizorii conectați cu clientul curent
+        $suppliers = \App\Models\User::whereHas('supplierConnections', function ($q) {
+            $q->where('client_id', Auth::id())
+              ->where('status', 'active');
+        })->get();
+
         $products = Product::active()
             ->when(Auth::user()->isClient(), function ($query) {
                 return $query->whereHas('supplier', function ($q) {
@@ -55,7 +61,7 @@ class OrderController extends Controller
             })
             ->get();
         
-        return view('orders.create', compact('products'));
+        return view('orders.create', compact('products', 'suppliers'));
     }
 
     /**

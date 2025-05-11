@@ -27,20 +27,22 @@
                             </a>
                         </div>
                     @else
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <a href="{{ route('products.index') }}" class="block p-6 bg-blue-100 rounded-lg hover:bg-blue-200">
                                 <h3 class="text-lg font-semibold mb-2">Produse</h3>
                                 <p>Vezi produsele disponibile</p>
                             </a>
-                            
                             <a href="{{ route('orders.index') }}" class="block p-6 bg-green-100 rounded-lg hover:bg-green-200">
                                 <h3 class="text-lg font-semibold mb-2">Comenzi</h3>
                                 <p>Vezi comenzile tale</p>
                             </a>
-                            
                             <a href="{{ route('connections.index') }}" class="block p-6 bg-purple-100 rounded-lg hover:bg-purple-200">
                                 <h3 class="text-lg font-semibold mb-2">Conexiuni</h3>
                                 <p>Gestionează conexiunile cu furnizorii</p>
+                            </a>
+                            <a href="{{ route('orders.create') }}" class="block p-6 bg-yellow-100 rounded-lg hover:bg-yellow-200">
+                                <h3 class="text-lg font-semibold mb-2">Plasează comandă</h3>
+                                <p>Plasează o comandă nouă către furnizorii tăi</p>
                             </a>
                         </div>
                     @endif
