@@ -18,7 +18,7 @@ class ConnectionPolicy
             return $connection->client_id === $user->id;
         }
 
-        return $connection->furnizor_id === $user->id;
+        return $connection->supplier_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -28,7 +28,13 @@ class ConnectionPolicy
 
     public function update(User $user, Connection $connection): bool
     {
-        return false; // Nu permitem actualizarea conexiunilor
+        // Doar furnizorii pot actualiza statusul conexiunii
+        if (!$user->isSupplier()) {
+            return false;
+        }
+
+        // Furnizorul poate actualiza doar conexiunile sale
+        return $connection->supplier_id === $user->id;
     }
 
     public function delete(User $user, Connection $connection): bool
@@ -37,6 +43,6 @@ class ConnectionPolicy
             return $connection->client_id === $user->id;
         }
 
-        return $connection->furnizor_id === $user->id;
+        return $connection->supplier_id === $user->id;
     }
 } 

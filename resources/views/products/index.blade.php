@@ -52,7 +52,7 @@
                                     @if(auth()->user()->isSupplier())
                                         <th class="px-6 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                             Acțiuni
-                                        </th>
+                                    </th>
                                     @endif
                                 </tr>
                             </thead>
@@ -78,7 +78,7 @@
                                             {{ $product->stock }}
                                         </td>
                                         @if(auth()->user()->isSupplier())
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editează</a>
                                                 <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline">
                                                     @csrf
@@ -87,7 +87,7 @@
                                                         Șterge
                                                     </button>
                                                 </form>
-                                            </td>
+                                        </td>
                                         @endif
                                     </tr>
                                 @endforeach

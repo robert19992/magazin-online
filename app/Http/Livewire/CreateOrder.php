@@ -193,7 +193,12 @@ class CreateOrder extends Component
 
     public function render()
     {
-        $suppliers = Organization::suppliers()->active()->get();
+        $suppliers = Organization::suppliers()
+            ->whereHas('supplierConnections', function ($query) {
+                $query->where('client_id', auth()->id())
+                    ->where('status', 'active');
+            })
+            ->get();
         
         $products = collect();
         if ($this->selectedSupplier) {

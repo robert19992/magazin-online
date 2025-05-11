@@ -54,7 +54,7 @@ class OrderController extends Controller
                 });
             })
             ->get();
-
+        
         return view('orders.create', compact('products'));
     }
 
@@ -63,27 +63,37 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'supplier_id' => ['required', 'exists:users,id'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'exists:products,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'notes' => ['nullable', 'string'],
+        $request->validate([
+            'supplier_id' => 'required|exists:organizations,id',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
+
+        // Verifică dacă există o conexiune activă între client și furnizor
+        $hasActiveConnection = DB::table('connections')
+            ->where('client_id', auth()->id())
+            ->where('supplier_id', $request->supplier_id)
+            ->where('status', 'active')
+            ->exists();
+
+        if (!$hasActiveConnection) {
+            return back()->with('error', 'Nu aveți o conexiune activă cu acest furnizor.');
+        }
 
         try {
             DB::beginTransaction();
 
             $order = Order::create([
                 'client_id' => Auth::id(),
-                'supplier_id' => $validated['supplier_id'],
+                'supplier_id' => $request->supplier_id,
                 'order_number' => 'ORD-' . strtoupper(uniqid()),
                 'status' => 'pending',
-                'notes' => $validated['notes'] ?? null,
+                'notes' => $request->notes ?? null,
             ]);
 
             $total = 0;
-            foreach ($validated['items'] as $item) {
+            foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 
                 if (!$product->hasStock($item['quantity'])) {
@@ -104,7 +114,7 @@ class OrderController extends Controller
             $order->update(['total_amount' => $total]);
 
             DB::commit();
-
+            
             return redirect()->route('orders.show', $order)
                 ->with('success', 'Comandă creată cu succes.');
         } catch (\Exception $e) {
@@ -326,17 +336,17 @@ class OrderController extends Controller
                 case 'cancelled':
                     if (!$order->cancel()) {
                         throw new \Exception('Comanda nu poate fi anulată.');
-                    }
+                }
                     // Returnăm produsele în stoc
-                    foreach ($order->items as $item) {
+                foreach ($order->items as $item) {
                         $item->product->updateStock($item->quantity);
-                    }
+                }
                     break;
             }
 
             DB::commit();
 
-            return redirect()->route('orders.show', $order)
+        return redirect()->route('orders.show', $order)
                 ->with('success', 'Statusul comenzii a fost actualizat.');
         } catch (\Exception $e) {
             DB::rollBack();

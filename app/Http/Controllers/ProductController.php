@@ -30,7 +30,7 @@ class ProductController extends Controller
                 return $query->where('supplier_id', Auth::id());
             })
             ->paginate(10);
-            
+
         return view('products.index', compact('products'));
     }
 

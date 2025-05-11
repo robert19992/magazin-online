@@ -68,7 +68,7 @@
                                         @else
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $order->supplier->company_name }}
-                                            </td>
+                                        </td>
                                         @endif
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ $order->created_at->format('d.m.Y H:i') }}

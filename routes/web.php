@@ -43,7 +43,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('connections', ConnectionController::class);
-    Route::post('connections/{connection}/status', [ConnectionController::class, 'updateStatus'])->name('connections.status.update');
+    Route::patch('connections/{connection}/status', [ConnectionController::class, 'updateStatus'])->name('connections.update-status');
 });
 
 require __DIR__.'/auth.php';

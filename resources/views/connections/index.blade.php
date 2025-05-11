@@ -15,10 +15,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <span class="block sm:inline">{{ session('success') }}</span>
-                        </div>
-                    @endif
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
 
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -61,31 +61,48 @@
                                                 {{ $connection->client->connect_id }}
                                             </td>
                                         @else
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $connection->supplier->company_name }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $connection->supplier->connect_id }}
-                                            </td>
+                                        </td>
                                         @endif
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $connection->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $connection->is_active ? __('Activ') : __('Inactiv') }}
+                                                @if($connection->status === 'active') bg-green-100 text-green-800
+                                                @elseif($connection->status === 'pending') bg-yellow-100 text-yellow-800
+                                                @else bg-red-100 text-red-800 @endif">
+                                                @if($connection->status === 'active') {{ __('Activ') }}
+                                                @elseif($connection->status === 'pending') {{ __('În așteptare') }}
+                                                @else {{ __('Inactiv') }} @endif
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ $connection->created_at->format('d.m.Y H:i') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <form action="{{ route('connections.update-status', $connection) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="is_active" value="{{ $connection->is_active ? 0 : 1 }}">
-                                                <button type="submit" class="text-{{ $connection->is_active ? 'red' : 'green' }}-600 hover:text-{{ $connection->is_active ? 'red' : 'green' }}-900 mr-3">
-                                                    {{ $connection->is_active ? __('Dezactivează') : __('Activează') }}
-                                                </button>
-                                            </form>
+                                            @if(auth()->user()->isSupplier())
+                                                @if($connection->status === 'pending')
+                                                    <form action="{{ route('connections.update-status', $connection) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="is_active" value="1">
+                                                        <button type="submit" class="text-green-600 hover:text-green-900 mr-3">
+                                                            {{ __('Activează') }}
+                                                        </button>
+                                                    </form>
+                                                @elseif($connection->status === 'active')
+                                                    <form action="{{ route('connections.update-status', $connection) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="is_active" value="0">
+                                                        <button type="submit" class="text-red-600 hover:text-red-900 mr-3">
+                                                            {{ __('Dezactivează') }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endif
                                             <form action="{{ route('connections.destroy', $connection) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')

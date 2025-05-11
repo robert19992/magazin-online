@@ -16,12 +16,12 @@ class ConnectionController extends Controller
 
     public function index()
     {
-        $connections = Connection::with(['client', 'furnizor'])
+        $connections = Connection::with(['client', 'supplier'])
             ->when(Auth::user()->isClient(), function ($query) {
                 return $query->where('client_id', Auth::id());
             })
             ->when(Auth::user()->isSupplier(), function ($query) {
-                return $query->where('furnizor_id', Auth::id());
+                return $query->where('supplier_id', Auth::id());
             })
             ->paginate(10);
 
@@ -33,9 +33,9 @@ class ConnectionController extends Controller
         $this->authorize('create', Connection::class);
 
         $users = User::when(Auth::user()->isClient(), function ($query) {
-            return $query->where('account_type', 'furnizor');
+            return $query->where('role', 'supplier');
         })->when(Auth::user()->isSupplier(), function ($query) {
-            return $query->where('account_type', 'client');
+            return $query->where('role', 'client');
         })->get();
 
         return view('connections.create', compact('users'));
@@ -46,10 +46,10 @@ class ConnectionController extends Controller
         $this->authorize('create', Connection::class);
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id'
+            'connect_id' => 'required|exists:users,connect_id'
         ]);
 
-        $user = User::findOrFail($validated['user_id']);
+        $user = User::where('connect_id', $validated['connect_id'])->firstOrFail();
 
         if (Auth::user()->isClient()) {
             $connection = Connection::connect(Auth::id(), $user->id);
@@ -66,12 +66,37 @@ class ConnectionController extends Controller
         $this->authorize('delete', $connection);
 
         if (Auth::user()->isClient()) {
-            Connection::disconnect(Auth::id(), $connection->furnizor_id);
+            Connection::disconnect(Auth::id(), $connection->supplier_id);
         } else {
             Connection::disconnect($connection->client_id, Auth::id());
         }
 
         return redirect()->route('connections.index')
             ->with('success', 'Conexiunea a fost ștearsă cu succes.');
+    }
+
+    public function updateStatus(Request $request, Connection $connection)
+    {
+        $this->authorize('update', $connection);
+
+        if (!Auth::user()->isSupplier()) {
+            return redirect()->route('connections.index')
+                ->with('error', 'Doar furnizorii pot actualiza statusul conexiunilor.');
+        }
+
+        $validated = $request->validate([
+            'is_active' => 'required|boolean'
+        ]);
+
+        if ($validated['is_active']) {
+            $connection->activate();
+            $message = 'Conexiunea a fost activată cu succes.';
+        } else {
+            $connection->deactivate();
+            $message = 'Conexiunea a fost dezactivată cu succes.';
+        }
+
+        return redirect()->route('connections.index')
+            ->with('success', $message);
     }
 }

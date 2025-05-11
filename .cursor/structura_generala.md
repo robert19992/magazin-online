@@ -71,3 +71,10 @@ In aceasta pagina clientul isi poate vedea sub forma unei liste documentele prim
 
 5.Connect
 In aceasta pagina clientul isi poate gestiona furnizorii cu care a format o relatie prin adaugarea connect_id unic de funizor. Acesta poate avea furnizori multiplii si le poate vedea toate detaliile cum ar fi denumirea si connect_id.
+
+
+furnizor:
+autoparts@test.com 68211621be741
+
+client
+client1@test.com  6821176f95cb9

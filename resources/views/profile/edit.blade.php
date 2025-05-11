@@ -65,6 +65,14 @@
                             </p>
                         </div>
 
+                        <div>
+                            <x-input-label for="role" :value="__('Tip cont')" />
+                            <x-text-input id="role" type="text" class="mt-1 block w-full bg-gray-100" :value="$user->role === 'supplier' ? 'Furnizor' : 'Client'" disabled />
+                            <p class="mt-2 text-sm text-gray-500">
+                                {{ __('Acesta este tipul contului dvs. Nu poate fi modificat.') }}
+                            </p>
+                        </div>
+
                         <div class="flex items-center gap-4">
                             <x-primary-button>{{ __('Salvează') }}</x-primary-button>
 

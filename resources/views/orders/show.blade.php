@@ -20,7 +20,7 @@
                             {{ __('Procesează comanda') }}
                         </button>
                     </form>
-                @endif
+                            @endif
                 @if(auth()->user()->isSupplier() && $order->status === 'processing')
                     <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
                         @csrf
@@ -64,7 +64,7 @@
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">{{ __('Note') }}</dt>
                                         <dd class="mt-1 text-sm text-gray-900">{{ $order->notes }}</dd>
-                                    </div>
+                            </div>
                                 @endif
                             </dl>
                         </div>
@@ -90,16 +90,16 @@
                                     </div>
                                 @endif
                             </dl>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
                     <!-- Produse comandate -->
                     <div class="mt-8">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Produse comandate') }}</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             {{ __('Cod produs') }}
                                         </th>
@@ -115,40 +115,40 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             {{ __('Subtotal') }}
                                         </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($order->items as $item)
-                                        <tr>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($order->items as $item)
+                                    <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $item->product->part_number }}
-                                            </td>
+                                        </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $item->product->description }}
-                                            </td>
+                                        </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ $item->quantity }}
-                                            </td>
+                                        </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ number_format($item->price, 2) }} RON
-                                            </td>
+                                        </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ number_format($item->quantity * $item->price, 2) }} RON
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
-                                            {{ __('Total comandă') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ number_format($order->total, 2) }} RON
                                         </td>
                                     </tr>
-                                </tfoot>
-                            </table>
+                                @endforeach
+                            </tbody>
+                                <tfoot>
+                                <tr>
+                                        <td colspan="4" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                                            {{ __('Total comandă') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ number_format($order->total, 2) }} RON
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
                         </div>
                     </div>
                 </div>

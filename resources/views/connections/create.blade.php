@@ -13,12 +13,12 @@
                         <div class="mb-4">
                             <div class="font-medium text-red-600">
                                 {{ __('Ups! Au apărut următoarele erori:') }}
-                            </div>
+                        </div>
 
                             <ul class="mt-3 list-disc list-inside text-sm text-red-600">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
-                                @endforeach
+                                    @endforeach
                             </ul>
                         </div>
                     @endif

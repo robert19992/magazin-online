@@ -54,10 +54,6 @@ class Connection extends Model
     // Helpers
     public function activate(): bool
     {
-        if ($this->status !== 'pending') {
-            return false;
-        }
-
         $this->status = 'active';
         $this->connected_at = now();
         return $this->save();
@@ -65,10 +61,6 @@ class Connection extends Model
 
     public function deactivate(): bool
     {
-        if ($this->status !== 'active') {
-            return false;
-        }
-
         $this->status = 'inactive';
         $this->disconnected_at = now();
         return $this->save();
@@ -80,24 +72,25 @@ class Connection extends Model
     }
 
     // Metode helper
-    public static function connect($clientId, $furnizorId)
+    public static function connect($clientId, $supplierId)
     {
-        return static::firstOrCreate([
+        return static::create([
             'client_id' => $clientId,
-            'furnizor_id' => $furnizorId
+            'supplier_id' => $supplierId,
+            'status' => 'pending'
         ]);
     }
 
-    public static function disconnect($clientId, $furnizorId)
+    public static function disconnect($clientId, $supplierId)
     {
         return static::where('client_id', $clientId)
-            ->where('furnizor_id', $furnizorId)
+            ->where('supplier_id', $supplierId)
             ->delete();
     }
 
     public function scopeForSupplier($query, $supplierId)
     {
-        return $query->where('furnizor_id', $supplierId);
+        return $query->where('supplier_id', $supplierId);
     }
 
     public function scopeForCustomer($query, $customerId)
