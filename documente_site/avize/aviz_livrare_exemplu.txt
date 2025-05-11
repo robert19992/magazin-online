@@ -1,0 +1,23 @@
+AVIZ DE LIVRARE NR: [NUMAR_AVIZ]
+DATA: [DATA]
+
+FURNIZOR: [NUME_FURNIZOR]
+ID FURNIZOR: [ID_FURNIZOR]
+
+CLIENT: [NUME_CLIENT]
+ID CLIENT: [ID_CLIENT]
+
+COMANDA NR: [NUMAR_COMANDA]
+
+PRODUSE LIVRATE:
+------------------------------------------
+COD PRODUS | DESCRIERE | CANTITATE | PRET
+------------------------------------------
+[COD_1]    | [DESC_1]  | [CANT_1]  | [PRET_1]
+[COD_2]    | [DESC_2]  | [CANT_2]  | [PRET_2]
+[COD_3]    | [DESC_3]  | [CANT_3]  | [PRET_3]
+------------------------------------------
+
+TOTAL LIVRARE: [SUMA_TOTALA]
+
+Aviz generat automat de sistemul de comenzi.

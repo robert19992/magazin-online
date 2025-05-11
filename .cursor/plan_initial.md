@@ -399,4 +399,3 @@ o	Any issues found on staging can be addressed before going to production.
 By following this testing and deployment plan, we aim to deliver a high-quality CRM system with minimal bugs and a smooth rollout. The combination of automated tests (feature tests for logic, Dusk for UI)
 laravel.com
 and a staging phase will ensure that the “Design and Implementation of a Technological Solution for an Online Store” using Laravel Sail is successful and meets the project objectives. The result will be a robust CRM platform empowering the online store to manage customers, orders, and supplier interactions efficiently.
-

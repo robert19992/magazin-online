@@ -1,0 +1,29 @@
+FACTURA NR: [NUMAR_FACTURA]
+DATA: [DATA]
+
+FURNIZOR: [NUME_FURNIZOR]
+ID FURNIZOR: [ID_FURNIZOR]
+CUI: [CUI_FURNIZOR]
+ADRESA: [ADRESA_FURNIZOR]
+
+CLIENT: [NUME_CLIENT]
+ID CLIENT: [ID_CLIENT] 
+CUI: [CUI_CLIENT]
+ADRESA: [ADRESA_CLIENT]
+
+COMANDA NR: [NUMAR_COMANDA]
+AVIZ LIVRARE NR: [NUMAR_AVIZ]
+
+PRODUSE FACTURATE:
+------------------------------------------
+COD PRODUS | DESCRIERE | CANTITATE | PRET | TOTAL
+------------------------------------------
+[COD_1]    | [DESC_1]  | [CANT_1]  | [PRET_1] | [TOTAL_1]
+[COD_2]    | [DESC_2]  | [CANT_2]  | [PRET_2] | [TOTAL_2]
+[COD_3]    | [DESC_3]  | [CANT_3]  | [PRET_3] | [TOTAL_3]
+------------------------------------------
+
+TOTAL FACTURA: [SUMA_TOTALA]
+
+Factura generata automat de sistemul de comenzi.
+
