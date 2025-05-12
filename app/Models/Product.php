@@ -22,6 +22,7 @@ class Product extends Model
         'category',
         'specifications',
         'is_active',
+        'market_date',
     ];
 
     protected $casts = [

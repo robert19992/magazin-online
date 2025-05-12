@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
 use League\Csv\Writer;
@@ -17,7 +18,6 @@ class ProductController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('supplier')->except(['index', 'show']);
     }
 
     /**
@@ -53,9 +53,8 @@ class ProductController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'sku' => ['required', 'string', 'max:50', 'unique:products'],
-            'category' => ['required', 'string', 'max:100'],
-            'specifications' => ['nullable', 'array'],
             'is_active' => ['boolean'],
+            'market_date' => ['nullable', 'date'],
         ]);
 
         $validated['supplier_id'] = Auth::id();

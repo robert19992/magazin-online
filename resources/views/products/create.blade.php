@@ -27,60 +27,46 @@
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Cod produs -->
-                        <div>
-                                <x-input-label for="part_number" :value="__('Cod produs')" />
-                                <x-text-input id="part_number" name="part_number" type="text" class="mt-1 block w-full" :value="old('part_number')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('part_number')" />
-                        </div>
+                            <!-- Nume produs -->
+                            <div>
+                                <x-input-label for="name" :value="__('Nume produs')" />
+                                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required />
+                                <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                            </div>
 
-                        <!-- Descriere -->
-                        <div>
+                            <!-- SKU -->
+                            <div>
+                                <x-input-label for="sku" :value="__('SKU')" />
+                                <x-text-input id="sku" name="sku" type="text" class="mt-1 block w-full" :value="old('sku')" required />
+                                <x-input-error class="mt-2" :messages="$errors->get('sku')" />
+                            </div>
+
+                            <!-- Descriere -->
+                            <div>
                                 <x-input-label for="description" :value="__('Descriere')" />
                                 <x-text-input id="description" name="description" type="text" class="mt-1 block w-full" :value="old('description')" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('description')" />
-                        </div>
+                            </div>
 
-                            <!-- Producător -->
-                        <div>
-                                <x-input-label for="manufacturer" :value="__('Producător')" />
-                                <x-text-input id="manufacturer" name="manufacturer" type="text" class="mt-1 block w-full" :value="old('manufacturer')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('manufacturer')" />
-                        </div>
-
-                        <!-- Greutate -->
-                        <div>
-                                <x-input-label for="weight" :value="__('Greutate (kg)')" />
-                                <x-text-input id="weight" name="weight" type="number" step="0.01" class="mt-1 block w-full" :value="old('weight')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('weight')" />
-                        </div>
-
-                        <!-- Preț -->
-                        <div>
+                            <!-- Preț -->
+                            <div>
                                 <x-input-label for="price" :value="__('Preț (RON)')" />
                                 <x-text-input id="price" name="price" type="number" step="0.01" class="mt-1 block w-full" :value="old('price')" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('price')" />
-                        </div>
+                            </div>
 
-                        <!-- Stoc -->
-                        <div>
+                            <!-- Stoc -->
+                            <div>
                                 <x-input-label for="stock" :value="__('Stoc')" />
                                 <x-text-input id="stock" name="stock" type="number" class="mt-1 block w-full" :value="old('stock')" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('stock')" />
                             </div>
 
-                            <!-- Categorie -->
+                            <!-- Data intrare in piată -->
                             <div>
-                                <x-input-label for="category" :value="__('Categorie')" />
-                                <x-text-input id="category" name="category" type="text" class="mt-1 block w-full" :value="old('category')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('category')" />
-                            </div>
-
-                            <!-- Specificații -->
-                            <div>
-                                <x-input-label for="specifications" :value="__('Specificații')" />
-                                <textarea id="specifications" name="specifications" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('specifications') }}</textarea>
-                                <x-input-error class="mt-2" :messages="$errors->get('specifications')" />
+                                <x-input-label for="market_date" :value="__('Data intrare in piată')" />
+                                <x-text-input id="market_date" name="market_date" type="date" class="mt-1 block w-full" :value="old('market_date')" required />
+                                <x-input-error class="mt-2" :messages="$errors->get('market_date')" />
                             </div>
                         </div>
 

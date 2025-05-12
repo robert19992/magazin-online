@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\IdocGeneratorService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,11 +26,19 @@ class Order extends Model
         'total_amount',
         'notes',
         'processed_at',
+        'idoc_order_generated',
+        'idoc_delivery_generated',
+        'idoc_order_generated_at',
+        'idoc_delivery_generated_at',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'processed_at' => 'datetime',
+        'idoc_order_generated' => 'boolean',
+        'idoc_delivery_generated' => 'boolean',
+        'idoc_order_generated_at' => 'datetime',
+        'idoc_delivery_generated_at' => 'datetime',
     ];
 
     /**
@@ -65,9 +74,20 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * Relația cu mesajele IDOC.
+     */
     public function idocMessages(): HasMany
     {
         return $this->hasMany(IdocMessage::class);
+    }
+
+    /**
+     * Relația cu documentele.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
     }
 
     /**
@@ -151,13 +171,61 @@ class Order extends Model
         return $total;
     }
 
-    public function markAsDelivered()
+    /**
+     * Generează documentele pentru comanda plasată.
+     * 
+     * @param bool $useQueue Folosește coadă pentru procesare asincronă
+     * @return array|void Căile către documentele generate sau void dacă se folosește coada
+     */
+    public function generatePlacedOrderDocuments(bool $useQueue = false)
     {
-        if ($this->status === 'activa') {
+        if ($useQueue) {
+            \App\Jobs\ProcessIdocJob::dispatch($this, 'order');
+            return;
+        }
+        
+        $idocGenerator = app(IdocGeneratorService::class);
+        return $idocGenerator->generatePlacedOrderDocuments($this);
+    }
+
+    /**
+     * Generează documentele pentru comanda livrată.
+     * 
+     * @param bool $useQueue Folosește coadă pentru procesare asincronă
+     * @return array|void Căile către documentele generate sau void dacă se folosește coada
+     */
+    public function generateDeliveredOrderDocuments(bool $useQueue = false)
+    {
+        if ($useQueue) {
+            \App\Jobs\ProcessIdocJob::dispatch($this, 'delivery');
+            return;
+        }
+        
+        $idocGenerator = app(IdocGeneratorService::class);
+        return $idocGenerator->generateDeliveredOrderDocuments($this);
+    }
+
+    /**
+     * Marchează comanda ca fiind livrată și generează documentele necesare.
+     * 
+     * @param bool $useQueue Folosește coadă pentru procesare asincronă
+     * @return bool|array
+     */
+    public function markAsDelivered(bool $useQueue = false)
+    {
+        if ($this->status === 'activa' || $this->status === self::STATUS_CONFIRMED || $this->status === self::STATUS_SHIPPED) {
             $this->status = 'livrata';
             $this->save();
-            return true;
+            
+            // Generare documente pentru comanda livrată
+            if ($useQueue) {
+                \App\Jobs\ProcessIdocJob::dispatch($this, 'delivery');
+                return true;
+            }
+            
+            return $this->generateDeliveredOrderDocuments();
         }
+        
         return false;
     }
 

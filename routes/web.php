@@ -5,6 +5,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ConnectionController;
+use App\Http\Middleware\SupplierMiddleware;
+use App\Http\Middleware\ClientMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class);
     });
 
-    Route::middleware(['supplier'])->group(function () {
+    Route::middleware([SupplierMiddleware::class])->group(function () {
         Route::resource('products', ProductController::class);
         Route::post('products/import', [ProductController::class, 'processImport'])->name('products.import');
         Route::get('products/template/download', [ProductController::class, 'downloadTemplate'])->name('products.template.download');
@@ -34,16 +36,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('orders', OrderController::class);
-    Route::middleware(['supplier'])->group(function () {
+    Route::middleware([SupplierMiddleware::class])->group(function () {
         Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status.update');
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
     });
-    Route::middleware(['client'])->group(function () {
+    Route::middleware([ClientMiddleware::class])->group(function () {
         Route::post('orders/{order}/deliver', [OrderController::class, 'markAsDelivered'])->name('orders.deliver');
     });
 
     Route::resource('connections', ConnectionController::class);
     Route::patch('connections/{connection}/status', [ConnectionController::class, 'updateStatus'])->name('connections.update-status');
+
+    // Rute pentru comenzi
+    Route::get('/orders/report', [OrderController::class, 'report'])->name('orders.report');
 });
 
 require __DIR__.'/auth.php';

@@ -66,8 +66,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'account.type' => \App\Http\Middleware\CheckAccountType::class,
         'role' => \App\Http\Middleware\CheckRole::class,
-        'supplier' => \App\Http\Middleware\SupplierMiddleware::class,
-        'client' => \App\Http\Middleware\ClientMiddleware::class,
+        // 'supplier' => \App\Http\Middleware\SupplierMiddleware::class,
+        // 'client' => \App\Http\Middleware\ClientMiddleware::class,
     ];
 
     /**
@@ -75,9 +75,9 @@ class Kernel extends HttpKernel
      *
      * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
-        'supplier' => \App\Http\Middleware\SupplierMiddleware::class,
-    ];
+    // protected $routeMiddleware = [
+    //     'supplier' => \App\Http\Middleware\SupplierMiddleware::class,
+    // ];
 
     /**
      * Register any events for your application.

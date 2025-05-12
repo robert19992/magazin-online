@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Organization;
 use App\Services\IdocService;
+use App\Services\IdocGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,10 +15,12 @@ use Illuminate\Support\Facades\Auth;
 class OrderController extends Controller
 {
     protected $idocService;
+    protected $idocGeneratorService;
 
-    public function __construct(IdocService $idocService)
+    public function __construct(IdocService $idocService, IdocGeneratorService $idocGeneratorService)
     {
         $this->idocService = $idocService;
+        $this->idocGeneratorService = $idocGeneratorService;
         $this->middleware('auth');
     }
 
@@ -118,11 +121,23 @@ class OrderController extends Controller
             }
 
             $order->update(['total_amount' => $total]);
+            
+            // Generăm documentele IDOC pentru comanda plasată
+            // Folosim procesarea asincronă pentru a îmbunătăți performanța
+            $useAsyncProcessing = config('idoc.use_queue', true);
+            $order->generatePlacedOrderDocuments($useAsyncProcessing);
 
             DB::commit();
             
+            $message = 'Comandă creată cu succes.';
+            if ($useAsyncProcessing) {
+                $message .= ' Documentele IDOC vor fi generate în fundal.';
+            } else {
+                $message .= ' Documentele IDOC au fost generate.';
+            }
+            
             return redirect()->route('orders.show', $order)
-                ->with('success', 'Comandă creată cu succes.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', $e->getMessage());
@@ -385,13 +400,75 @@ class OrderController extends Controller
     {
         $this->authorize('update', $order);
 
-        if ($order->status !== 'activa') {
-            return back()->withErrors(['error' => 'Doar comenzile active pot fi marcate ca livrate.']);
+        if ($order->status !== 'activa' && $order->status !== Order::STATUS_CONFIRMED && $order->status !== Order::STATUS_SHIPPED) {
+            return back()->withErrors(['error' => 'Doar comenzile active, confirmate sau expediate pot fi marcate ca livrate.']);
         }
 
-        $order->markAsDelivered();
+        try {
+            DB::beginTransaction();
+            
+            // Folosim procesarea asincronă pentru a îmbunătăți performanța
+            $useAsyncProcessing = config('idoc.use_queue', true);
+            $result = $order->markAsDelivered($useAsyncProcessing);
+            
+            if ($result === false) {
+                throw new \Exception('Eroare la marcarea comenzii ca livrată.');
+            }
+            
+            DB::commit();
+            
+            $message = 'Comanda a fost marcată ca livrată.';
+            if ($useAsyncProcessing) {
+                $message .= ' Documentele necesare vor fi generate în fundal.';
+            } else {
+                $message .= ' S-au generat documentele necesare.';
+            }
+            
+            return redirect()->route('orders.show', $order)
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Eroare: ' . $e->getMessage()]);
+        }
+    }
 
-        return redirect()->route('orders.show', $order)
-            ->with('success', 'Comanda a fost marcată ca livrată.');
+    /**
+     * Display the order report with statistics and filtering options.
+     */
+    public function report(Request $request)
+    {
+        // Obține statisticile generale
+        $totalOrders = Order::where('client_id', Auth::id())->count();
+        $activeOrders = Order::where('client_id', Auth::id())->where('status', 'active')->count();
+        $pendingOrders = Order::where('client_id', Auth::id())->where('status', 'pending')->count();
+        $deliveredOrders = Order::where('client_id', Auth::id())->where('status', 'delivered')->count();
+
+        // Construiește query-ul pentru comenzi cu filtrare
+        $query = Order::with(['supplier', 'items.product'])
+            ->where('client_id', Auth::id());
+
+        // Aplică filtrele
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Ordonează și paginează rezultatele
+        $orders = $query->latest()->paginate(10);
+
+        return view('orders.report', compact(
+            'orders',
+            'totalOrders',
+            'activeOrders',
+            'pendingOrders',
+            'deliveredOrders'
+        ));
     }
 }

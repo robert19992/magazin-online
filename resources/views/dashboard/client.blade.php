@@ -71,6 +71,33 @@
                         <p class="text-gray-500">Nu există documente recente</p>
                     @endif
                 </div>
+
+                <!-- Carduri principale dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-blue-100 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg mb-1">Produse</h3>
+                        <p class="mb-2">Vezi produsele disponibile</p>
+                    </div>
+                    <div class="bg-green-100 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg mb-1">Comenzi</h3>
+                        <p class="mb-2">Vezi comenzile tale</p>
+                    </div>
+                    <div class="bg-purple-100 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg mb-1">Conexiuni</h3>
+                        <p class="mb-2">Gestionează conexiunile cu furnizorii</p>
+                    </div>
+                    <div class="bg-yellow-100 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg mb-1">Plasează comandă</h3>
+                        <p class="mb-2">Plasează o comandă nouă către furnizorii tăi</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-cyan-100 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg mb-1">Raport comenzi</h3>
+                        <p class="mb-2">Vezi statistici și detalii despre toate comenzile tale</p>
+                        <a href="{{ route('orders.report') }}" class="inline-block mt-2 px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700">Accesează raportul</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
