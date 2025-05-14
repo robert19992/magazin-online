@@ -14,15 +14,16 @@ class Product extends Model
 
     protected $fillable = [
         'supplier_id',
-        'name',
+        'cod_produs',
         'description',
         'price',
         'stock',
         'sku',
-        'category',
-        'specifications',
         'is_active',
         'market_date',
+        'part_number',
+        'manufacturer',
+        'weight',
     ];
 
     protected $casts = [
@@ -46,7 +47,7 @@ class Product extends Model
     // Scopuri
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('stock', '>', 0);
     }
 
     public function scopeInStock($query)

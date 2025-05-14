@@ -21,7 +21,7 @@ class OrderPolicy
             return $order->client_id === $user->id;
         }
 
-        return $order->furnizor_id === $user->id;
+        return $order->supplier_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -31,7 +31,7 @@ class OrderPolicy
 
     public function update(User $user, Order $order): bool
     {
-        return $user->isSupplier() && $order->furnizor_id === $user->id;
+        return $user->isSupplier() && $order->supplier_id === $user->id;
     }
 
     public function delete(User $user, Order $order): bool

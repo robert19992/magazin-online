@@ -285,21 +285,48 @@ class IdocGeneratorService
         // Înlocuim placeholder-ele cu date reale
         $content = str_replace('[NUMAR_COMANDA]', $order->order_number, $template);
         $content = str_replace('[DATA]', Carbon::now()->format('Y-m-d H:i:s'), $content);
-        $content = str_replace('[NUME_FURNIZOR]', $order->supplier->organization->name, $content);
-        $content = str_replace('[ID_FURNIZOR]', $order->supplier->connect_id, $content);
-        $content = str_replace('[NUME_CLIENT]', $order->client->organization->name, $content);
-        $content = str_replace('[ID_CLIENT]', $order->client->connect_id, $content);
+        
+        // Verificare și înlocuire furnizor
+        $furnizorName = 'N/A';
+        $furnizorId = 'N/A';
+        if ($order->supplier) {
+            $furnizorId = $order->supplier->connect_id ?? 'N/A';
+            if ($order->supplier->organization) {
+                $furnizorName = $order->supplier->organization->name ?? 'N/A';
+            } else {
+                $furnizorName = $order->supplier->company_name ?? 'N/A';
+            }
+        }
+        $content = str_replace('[NUME_FURNIZOR]', $furnizorName, $content);
+        $content = str_replace('[ID_FURNIZOR]', $furnizorId, $content);
+        
+        // Verificare și înlocuire client
+        $clientName = 'N/A';
+        $clientId = 'N/A';
+        if ($order->client) {
+            $clientId = $order->client->connect_id ?? 'N/A';
+            if ($order->client->organization) {
+                $clientName = $order->client->organization->name ?? 'N/A';
+            } else {
+                $clientName = $order->client->company_name ?? 'N/A';
+            }
+        }
+        $content = str_replace('[NUME_CLIENT]', $clientName, $content);
+        $content = str_replace('[ID_CLIENT]', $clientId, $content);
         
         // Generăm liniile pentru produse
         $productLines = '';
         $i = 1;
         
         foreach ($order->items as $item) {
+            if (!$item->product) {
+                continue;
+            }
             $prod = $item->product;
-            $content = str_replace("[COD_$i]", $prod->code, $content);
-            $content = str_replace("[DESC_$i]", $prod->description, $content);
-            $content = str_replace("[CANT_$i]", $item->quantity, $content);
-            $content = str_replace("[PRET_$i]", number_format($item->unit_price, 2) . " RON", $content);
+            $content = str_replace("[COD_$i]", $prod->code ?? $prod->cod_produs ?? 'N/A', $content);
+            $content = str_replace("[DESC_$i]", $prod->description ?? 'N/A', $content);
+            $content = str_replace("[CANT_$i]", $item->quantity ?? 0, $content);
+            $content = str_replace("[PRET_$i]", number_format($item->unit_price ?? $item->price ?? 0, 2) . " RON", $content);
             $i++;
         }
 
@@ -307,7 +334,7 @@ class IdocGeneratorService
         $content = preg_replace('/\[COD_\d+\].*\[PRET_\d+\]/m', '', $content);
         
         // Înlocuim suma totală
-        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount, 2) . " RON", $content);
+        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount ?? 0, 2) . " RON", $content);
         
         return $content;
     }
@@ -328,21 +355,49 @@ class IdocGeneratorService
         // Înlocuim placeholder-ele cu date reale
         $content = str_replace('[NUMAR_AVIZ]', $avizNumber, $template);
         $content = str_replace('[DATA]', Carbon::now()->format('Y-m-d H:i:s'), $content);
-        $content = str_replace('[NUME_FURNIZOR]', $order->supplier->organization->name, $content);
-        $content = str_replace('[ID_FURNIZOR]', $order->supplier->connect_id, $content);
-        $content = str_replace('[NUME_CLIENT]', $order->client->organization->name, $content);
-        $content = str_replace('[ID_CLIENT]', $order->client->connect_id, $content);
+        
+        // Verificare și înlocuire furnizor
+        $furnizorName = 'N/A';
+        $furnizorId = 'N/A';
+        if ($order->supplier) {
+            $furnizorId = $order->supplier->connect_id ?? 'N/A';
+            if ($order->supplier->organization) {
+                $furnizorName = $order->supplier->organization->name ?? 'N/A';
+            } else {
+                $furnizorName = $order->supplier->company_name ?? 'N/A';
+            }
+        }
+        $content = str_replace('[NUME_FURNIZOR]', $furnizorName, $content);
+        $content = str_replace('[ID_FURNIZOR]', $furnizorId, $content);
+        
+        // Verificare și înlocuire client
+        $clientName = 'N/A';
+        $clientId = 'N/A';
+        if ($order->client) {
+            $clientId = $order->client->connect_id ?? 'N/A';
+            if ($order->client->organization) {
+                $clientName = $order->client->organization->name ?? 'N/A';
+            } else {
+                $clientName = $order->client->company_name ?? 'N/A';
+            }
+        }
+        $content = str_replace('[NUME_CLIENT]', $clientName, $content);
+        $content = str_replace('[ID_CLIENT]', $clientId, $content);
+        
         $content = str_replace('[NUMAR_COMANDA]', $order->order_number, $content);
         
         // Generăm liniile pentru produse
         $i = 1;
         
         foreach ($order->items as $item) {
+            if (!$item->product) {
+                continue;
+            }
             $prod = $item->product;
-            $content = str_replace("[COD_$i]", $prod->code, $content);
-            $content = str_replace("[DESC_$i]", $prod->description, $content);
-            $content = str_replace("[CANT_$i]", $item->quantity, $content);
-            $content = str_replace("[PRET_$i]", number_format($item->unit_price, 2) . " RON", $content);
+            $content = str_replace("[COD_$i]", $prod->code ?? $prod->cod_produs ?? 'N/A', $content);
+            $content = str_replace("[DESC_$i]", $prod->description ?? 'N/A', $content);
+            $content = str_replace("[CANT_$i]", $item->quantity ?? 0, $content);
+            $content = str_replace("[PRET_$i]", number_format($item->unit_price ?? $item->price ?? 0, 2) . " RON", $content);
             $i++;
         }
 
@@ -350,7 +405,7 @@ class IdocGeneratorService
         $content = preg_replace('/\[COD_\d+\].*\[PRET_\d+\]/m', '', $content);
         
         // Înlocuim suma totală
-        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount, 2) . " RON", $content);
+        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount ?? 0, 2) . " RON", $content);
         
         return $content;
     }
@@ -372,19 +427,56 @@ class IdocGeneratorService
         // Înlocuim placeholder-ele cu date reale
         $content = str_replace('[NUMAR_FACTURA]', $facturaNumber, $template);
         $content = str_replace('[DATA]', Carbon::now()->format('Y-m-d H:i:s'), $content);
-        $content = str_replace('[NUME_FURNIZOR]', $order->supplier->organization->name, $content);
-        $content = str_replace('[ID_FURNIZOR]', $order->supplier->connect_id, $content);
-        $content = str_replace('[CUI_FURNIZOR]', $order->supplier->organization->cui, $content);
-        $content = str_replace('[ADRESA_FURNIZOR]', 
-            $order->supplier->organization->strada . ' ' . $order->supplier->organization->numar_strada, 
-            $content);
         
-        $content = str_replace('[NUME_CLIENT]', $order->client->organization->name, $content);
-        $content = str_replace('[ID_CLIENT]', $order->client->connect_id, $content);
-        $content = str_replace('[CUI_CLIENT]', $order->client->organization->cui, $content);
-        $content = str_replace('[ADRESA_CLIENT]', 
-            $order->client->organization->strada . ' ' . $order->client->organization->numar_strada, 
-            $content);
+        // Verificare și înlocuire furnizor
+        $furnizorName = 'N/A';
+        $furnizorId = 'N/A';
+        $furnizorCui = 'N/A';
+        $furnizorAdresa = 'N/A';
+        
+        if ($order->supplier) {
+            $furnizorId = $order->supplier->connect_id ?? 'N/A';
+            
+            if ($order->supplier->organization) {
+                $furnizorName = $order->supplier->organization->name ?? 'N/A';
+                $furnizorCui = $order->supplier->organization->vat_number ?? 'N/A';
+                $furnizorAdresa = $order->supplier->organization->address ?? 'N/A';
+            } else {
+                $furnizorName = $order->supplier->company_name ?? 'N/A';
+                $furnizorCui = $order->supplier->cui ?? 'N/A';
+                $furnizorAdresa = ($order->supplier->street ?? '') . ' ' . ($order->supplier->street_number ?? '');
+            }
+        }
+        
+        $content = str_replace('[NUME_FURNIZOR]', $furnizorName, $content);
+        $content = str_replace('[ID_FURNIZOR]', $furnizorId, $content);
+        $content = str_replace('[CUI_FURNIZOR]', $furnizorCui, $content);
+        $content = str_replace('[ADRESA_FURNIZOR]', $furnizorAdresa, $content);
+        
+        // Verificare și înlocuire client
+        $clientName = 'N/A';
+        $clientId = 'N/A';
+        $clientCui = 'N/A';
+        $clientAdresa = 'N/A';
+        
+        if ($order->client) {
+            $clientId = $order->client->connect_id ?? 'N/A';
+            
+            if ($order->client->organization) {
+                $clientName = $order->client->organization->name ?? 'N/A';
+                $clientCui = $order->client->organization->vat_number ?? 'N/A';
+                $clientAdresa = $order->client->organization->address ?? 'N/A';
+            } else {
+                $clientName = $order->client->company_name ?? 'N/A';
+                $clientCui = $order->client->cui ?? 'N/A';
+                $clientAdresa = ($order->client->street ?? '') . ' ' . ($order->client->street_number ?? '');
+            }
+        }
+        
+        $content = str_replace('[NUME_CLIENT]', $clientName, $content);
+        $content = str_replace('[ID_CLIENT]', $clientId, $content);
+        $content = str_replace('[CUI_CLIENT]', $clientCui, $content);
+        $content = str_replace('[ADRESA_CLIENT]', $clientAdresa, $content);
         
         $content = str_replace('[NUMAR_COMANDA]', $order->order_number, $content);
         $content = str_replace('[NUMAR_AVIZ]', $avizNumber, $content);
@@ -393,13 +485,16 @@ class IdocGeneratorService
         $i = 1;
         
         foreach ($order->items as $item) {
+            if (!$item->product) {
+                continue;
+            }
             $prod = $item->product;
-            $totalItem = $item->quantity * $item->unit_price;
+            $totalItem = ($item->quantity ?? 0) * ($item->unit_price ?? $item->price ?? 0);
             
-            $content = str_replace("[COD_$i]", $prod->code, $content);
-            $content = str_replace("[DESC_$i]", $prod->description, $content);
-            $content = str_replace("[CANT_$i]", $item->quantity, $content);
-            $content = str_replace("[PRET_$i]", number_format($item->unit_price, 2) . " RON", $content);
+            $content = str_replace("[COD_$i]", $prod->code ?? $prod->cod_produs ?? 'N/A', $content);
+            $content = str_replace("[DESC_$i]", $prod->description ?? 'N/A', $content);
+            $content = str_replace("[CANT_$i]", $item->quantity ?? 0, $content);
+            $content = str_replace("[PRET_$i]", number_format($item->unit_price ?? $item->price ?? 0, 2) . " RON", $content);
             $content = str_replace("[TOTAL_$i]", number_format($totalItem, 2) . " RON", $content);
             $i++;
         }
@@ -408,7 +503,7 @@ class IdocGeneratorService
         $content = preg_replace('/\[COD_\d+\].*\[TOTAL_\d+\]/m', '', $content);
         
         // Înlocuim suma totală
-        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount, 2) . " RON", $content);
+        $content = str_replace('[SUMA_TOTALA]', number_format($order->total_amount ?? 0, 2) . " RON", $content);
         
         return $content;
     }
@@ -515,12 +610,41 @@ class IdocGeneratorService
         $directories = array_values($this->directories);
         
         foreach ($directories as $directory) {
+            // Verificăm dacă directorul există
             if (!is_dir($directory)) {
-                if (!mkdir($directory, 0755, true)) {
-                    $this->logError('Nu s-a putut crea directorul: ' . $directory);
-                    throw new \Exception("Nu s-a putut crea directorul: $directory");
+                $this->logInfo("Încercare creare director: $directory");
+                
+                try {
+                    // Creem directorul recursiv cu permisiuni 0755
+                    if (!mkdir($directory, 0755, true)) {
+                        $error = error_get_last();
+                        $this->logError("Nu s-a putut crea directorul: $directory. Eroare: " . ($error['message'] ?? 'Necunoscută'));
+                        throw new \Exception("Nu s-a putut crea directorul: $directory");
+                    }
+                    
+                    // Verificăm permisiunile și le corectăm dacă e nevoie
+                    chmod($directory, 0755);
+                    
+                    $this->logInfo("Director creat cu succes: $directory");
+                } catch (\Exception $e) {
+                    $this->logError("Excepție la crearea directorului $directory: " . $e->getMessage());
+                    throw $e;
                 }
-                $this->logInfo('S-a creat directorul: ' . $directory);
+            } else {
+                // Directorul există, verificăm permisiunile
+                if (!is_writable($directory)) {
+                    $this->logWarning("Directorul $directory există dar nu are permisiuni de scriere");
+                    
+                    // Încercăm să actualizăm permisiunile
+                    try {
+                        chmod($directory, 0755);
+                        $this->logInfo("Permisiuni actualizate pentru directorul: $directory");
+                    } catch (\Exception $e) {
+                        $this->logError("Nu s-au putut actualiza permisiunile pentru $directory: " . $e->getMessage());
+                    }
+                } else {
+                    $this->logInfo("Directorul $directory există și are permisiuni de scriere");
+                }
             }
         }
     }
@@ -572,6 +696,19 @@ class IdocGeneratorService
     {
         if ($this->loggingConfig['enabled']) {
             Log::channel($this->loggingConfig['channel'])->error($message, $context);
+        }
+    }
+
+    /**
+     * Înregistrează un mesaj de avertizare în log
+     *
+     * @param string $message Mesajul
+     * @param array $context Contextul
+     */
+    private function logWarning(string $message, array $context = []): void
+    {
+        if ($this->loggingConfig['enabled'] ?? true) {
+            Log::channel($this->loggingConfig['channel'] ?? 'idoc')->warning($message, $context);
         }
     }
 } 

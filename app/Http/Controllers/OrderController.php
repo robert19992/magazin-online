@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -72,19 +73,23 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Procesare comandă nouă', $request->all());
+        
         $request->validate([
-            'supplier_id' => 'required|exists:organizations,id',
+            'supplier_id' => 'required|exists:users,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        // Verifică dacă există o conexiune activă între client și furnizor
+        // Verificăm dacă există o conexiune activă între client și furnizor
         $hasActiveConnection = DB::table('connections')
-            ->where('client_id', auth()->id())
+            ->where('client_id', Auth::id())
             ->where('supplier_id', $request->supplier_id)
             ->where('status', 'active')
             ->exists();
+
+        Log::info('Conexiune activă cu furnizorul: ' . ($hasActiveConnection ? 'Da' : 'Nu'));
 
         if (!$hasActiveConnection) {
             return back()->with('error', 'Nu aveți o conexiune activă cu acest furnizor.');
@@ -93,54 +98,82 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
+            // Generăm un număr unic de comandă
+            $orderNumber = 'ORD-' . Auth::id() . '-' . strtoupper(uniqid());
+            
+            Log::info('Creare comandă cu numărul: ' . $orderNumber);
+
             $order = Order::create([
                 'client_id' => Auth::id(),
                 'supplier_id' => $request->supplier_id,
-                'order_number' => 'ORD-' . strtoupper(uniqid()),
-                'status' => 'pending',
+                'order_number' => $orderNumber,
+                'status' => 'pending', // Status inițial: în așteptare
                 'notes' => $request->notes ?? null,
+                'total_amount' => 0, // Va fi actualizat mai jos
             ]);
 
             $total = 0;
+            
+            Log::info('Procesare articole comandă: ' . count($request->items));
+            
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 
+                // Verificăm dacă produsul are stoc suficient
                 if (!$product->hasStock($item['quantity'])) {
-                    throw new \Exception("Produsul {$product->name} nu are stoc suficient.");
+                    throw new \Exception("Produsul '{$product->description}' (cod: {$product->cod_produs}) nu are stoc suficient. Disponibil: {$product->stock}");
                 }
 
+                $itemPrice = $product->price * $item['quantity'];
+                
+                // Adăugăm item-ul în comandă
                 $order->items()->create([
                     'product_id' => $product->id,
                     'quantity' => $item['quantity'],
-                    'unit_price' => $product->price,
-                    'total_price' => $product->price * $item['quantity'],
+                    'price' => $product->price,
+                    'total_price' => $itemPrice,
                 ]);
 
+                // Actualizăm stocul
                 $product->updateStock(-$item['quantity']);
-                $total += $product->price * $item['quantity'];
+                $total += $itemPrice;
+                
+                Log::info('Adăugat produs în comandă', [
+                    'produs' => $product->cod_produs,
+                    'cantitate' => $item['quantity'],
+                    'pret' => $product->price,
+                    'total' => $itemPrice
+                ]);
             }
 
+            // Actualizăm valoarea totală a comenzii
             $order->update(['total_amount' => $total]);
             
-            // Generăm documentele IDOC pentru comanda plasată
-            // Folosim procesarea asincronă pentru a îmbunătăți performanța
-            $useAsyncProcessing = config('idoc.use_queue', true);
-            $order->generatePlacedOrderDocuments($useAsyncProcessing);
-
-            DB::commit();
+            Log::info('Total comandă actualizat: ' . $total);
             
-            $message = 'Comandă creată cu succes.';
-            if ($useAsyncProcessing) {
-                $message .= ' Documentele IDOC vor fi generate în fundal.';
-            } else {
-                $message .= ' Documentele IDOC au fost generate.';
+            // Generăm documentele pentru comandă, dacă serviciul este disponibil
+            if (method_exists($this->idocGeneratorService, 'generatePlacedOrderDocuments')) {
+                try {
+                    $documents = $this->idocGeneratorService->generatePlacedOrderDocuments($order);
+                    Log::info('Documente generate pentru comanda: ' . $orderNumber, $documents);
+                } catch (\Exception $e) {
+                    Log::error('Eroare la generarea documentelor: ' . $e->getMessage());
+                    // Continuăm chiar dacă generarea documentelor eșuează
+                }
             }
             
+            // Eliberăm tranzacția
+            DB::commit();
+            
+            Log::info('Comandă finalizată cu succes: ' . $orderNumber);
+            
             return redirect()->route('orders.show', $order)
-                ->with('success', $message);
+                ->with('success', 'Comanda #' . $orderNumber . ' a fost plasată cu succes și se află în așteptare la furnizor.');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+            Log::error('Eroare la procesarea comenzii: ' . $e->getMessage());
+            return back()->with('error', 'Eroare la procesarea comenzii: ' . $e->getMessage());
         }
     }
 
@@ -151,6 +184,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
         $order->load(['client', 'supplier', 'items.product']);
+        
         return view('orders.show', compact('order'));
     }
 
@@ -238,7 +272,7 @@ class OrderController extends Controller
      */
     public function confirm(Order $order)
     {
-        if (!auth()->user()->isSupplier() || $order->furnizor_id !== auth()->id()) {
+        if (!auth()->user()->isSupplier() || $order->supplier_id !== auth()->id()) {
             abort(403);
         }
 

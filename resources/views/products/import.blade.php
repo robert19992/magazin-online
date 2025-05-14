@@ -24,18 +24,17 @@
                     <div class="mb-6">
                         <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Instrucțiuni Import') }}</h3>
                         <div class="bg-gray-50 rounded-lg p-4">
-                            <p class="text-sm text-gray-600 mb-2">{{ __('Fișierul CSV trebuie să conțină următoarele coloane:') }}</p>
+                            <p class="text-sm text-gray-600 mb-2">{{ __('Fișierul CSV trebuie să conțină următoarele coloane, separate prin virgulă:') }}</p>
                             <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
-                                <li>cod_produs (obligatoriu, unic)</li>
-                                <li>descriere (obligatoriu)</li>
-                                <li>producator_masina (opțional)</li>
-                                <li>greutate (opțional, în kg)</li>
-                                <li>pret (obligatoriu, format: 123.45)</li>
-                                <li>stoc (obligatoriu, număr întreg)</li>
-                                <li>unitate_masura (opțional, implicit: buc)</li>
-                                <li>specificatii_tehnice (opțional)</li>
-                                <li>categorie (opțional)</li>
+                                <li>Cod Produs (obligatoriu, unic)</li>
+                                <li>Descriere (obligatoriu)</li>
+                                <li>Producator Masina (obligatoriu)</li>
+                                <li>Greutate (obligatoriu, în kg)</li>
+                                <li>Pret (obligatoriu)</li>
+                                <li>Stoc (obligatoriu)</li>
+                                <li>Data Introducere pe piata (obligatoriu, format: YYYY-MM-DD)</li>
                             </ul>
+                            <p class="text-sm text-gray-600 mt-3 font-medium">Notă: Se folosește VIRGULĂ ca delimitator.</p>
                         </div>
                     </div>
 
@@ -44,7 +43,7 @@
                         @csrf
 
                         <div>
-                            <x-input-label for="csv_file" :value="__('Fișier CSV')" />
+                            <x-input-label for="csv_file" :value="__('Fișier CSV (delimitat prin virgulă)')" />
                             <input type="file" 
                                    name="csv_file" 
                                    id="csv_file" 
@@ -57,16 +56,6 @@
                                           hover:file:bg-indigo-100"
                                    required />
                             <x-input-error :messages="$errors->get('csv_file')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="delimiter" :value="__('Delimitator')" />
-                            <select name="delimiter" id="delimiter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <option value=",">, (virgulă)</option>
-                                <option value=";">; (punct și virgulă)</option>
-                                <option value="\t">Tab</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('delimiter')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center">
@@ -105,8 +94,8 @@
                         <p class="text-sm text-gray-600 mb-4">
                             {{ __('Descarcă un template CSV pentru a vedea formatul corect al datelor.') }}
                         </p>
-                        <a href="{{ route('products.download-template') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                        <a href="{{ route('products.template.download') }}" 
+                            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
                             {{ __('Descarcă Template CSV') }}
                         </a>
                     </div>

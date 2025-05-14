@@ -17,7 +17,11 @@
 
                             <ul class="mt-3 list-disc list-inside text-sm text-red-600">
                                 @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
+                                    @if (strpos($error, 'cod_produs has already been taken') !== false)
+                                        <li>Codul de produs introdus există deja în catalog.</li>
+                                    @else
+                                        <li>{{ $error }}</li>
+                                    @endif
                                 @endforeach
                             </ul>
                         </div>
@@ -27,18 +31,12 @@
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Nume produs -->
+                            <!-- Cod produs -->
                             <div>
-                                <x-input-label for="name" :value="__('Nume produs')" />
-                                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('name')" />
-                            </div>
-
-                            <!-- SKU -->
-                            <div>
-                                <x-input-label for="sku" :value="__('SKU')" />
-                                <x-text-input id="sku" name="sku" type="text" class="mt-1 block w-full" :value="old('sku')" required />
-                                <x-input-error class="mt-2" :messages="$errors->get('sku')" />
+                                <x-input-label for="cod_produs" :value="__('Cod produs')" />
+                                <x-text-input id="cod_produs" name="cod_produs" type="text" class="mt-1 block w-full" :value="old('cod_produs')" required />
+                                <p class="mt-1 text-sm text-gray-500">Codul produsului trebuie să fie unic în catalog.</p>
+                                <x-input-error class="mt-2" :messages="$errors->get('cod_produs')" />
                             </div>
 
                             <!-- Descriere -->
@@ -46,6 +44,20 @@
                                 <x-input-label for="description" :value="__('Descriere')" />
                                 <x-text-input id="description" name="description" type="text" class="mt-1 block w-full" :value="old('description')" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                            </div>
+
+                            <!-- Producător Mașină -->
+                            <div>
+                                <x-input-label for="manufacturer" :value="__('Producător Mașină')" />
+                                <x-text-input id="manufacturer" name="manufacturer" type="text" class="mt-1 block w-full" :value="old('manufacturer')" required />
+                                <x-input-error class="mt-2" :messages="$errors->get('manufacturer')" />
+                            </div>
+
+                            <!-- Greutate (kg) -->
+                            <div>
+                                <x-input-label for="weight" :value="__('Greutate (kg)')" />
+                                <x-text-input id="weight" name="weight" type="number" step="0.01" class="mt-1 block w-full" :value="old('weight')" required />
+                                <x-input-error class="mt-2" :messages="$errors->get('weight')" />
                             </div>
 
                             <!-- Preț -->
@@ -62,9 +74,9 @@
                                 <x-input-error class="mt-2" :messages="$errors->get('stock')" />
                             </div>
 
-                            <!-- Data intrare in piată -->
+                            <!-- Data intrare in piață -->
                             <div>
-                                <x-input-label for="market_date" :value="__('Data intrare in piată')" />
+                                <x-input-label for="market_date" :value="__('Data Introducere pe piață')" />
                                 <x-text-input id="market_date" name="market_date" type="date" class="mt-1 block w-full" :value="old('market_date')" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('market_date')" />
                             </div>

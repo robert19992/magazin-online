@@ -1,0 +1,4 @@
+Cod Produs,Descriere,Producator Masina,Greutate,Pret,Stoc,Data Introducere pe piata
+TEST001,Filtru ulei motor,Mercedes,0.5,45.99,20,2023-10-15
+TEST002,Filtru aer,BMW,0.3,35.50,15,2023-10-16
+TEST003,Bujie aprindere,Audi,0.1,22.75,30,2023-10-17 

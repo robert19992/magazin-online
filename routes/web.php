@@ -28,16 +28,29 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class);
     });
 
+    // Rute pentru gestionarea produselor - accesibile tuturor utilizatorilor autentificați
     Route::middleware([SupplierMiddleware::class])->group(function () {
-        Route::resource('products', ProductController::class);
-        Route::post('products/import', [ProductController::class, 'processImport'])->name('products.import');
-        Route::get('products/template/download', [ProductController::class, 'downloadTemplate'])->name('products.template.download');
-        Route::post('products/{product}/stock', [ProductController::class, 'updateStock'])->name('products.stock.update');
+        // Rute pentru gestionarea produselor - doar pentru furnizori
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        
+        Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
+        Route::post('/products/import', [ProductController::class, 'processImport'])->name('products.process-import');
+        Route::get('/products/template/download', [ProductController::class, 'downloadTemplate'])->name('products.template.download');
+        Route::post('/products/{product}/stock', [ProductController::class, 'updateStock'])->name('products.stock.update');
     });
+    
+    // Rute pentru vizualizarea produselor - accesibile tuturor utilizatorilor autentificați
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
     Route::resource('orders', OrderController::class);
     Route::middleware([SupplierMiddleware::class])->group(function () {
         Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status.update');
+        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
     });
     Route::middleware([ClientMiddleware::class])->group(function () {
@@ -49,6 +62,18 @@ Route::middleware(['auth'])->group(function () {
 
     // Rute pentru comenzi
     Route::get('/orders/report', [OrderController::class, 'report'])->name('orders.report');
+
+    // Rută de test pentru produsele unui furnizor
+    Route::get('/test-products/{supplier}', function ($supplier) {
+        $products = \App\Models\Product::where('supplier_id', $supplier)
+            ->where('stock', '>', 0)
+            ->get();
+        
+        return response()->json([
+            'count' => $products->count(),
+            'products' => $products
+        ]);
+    });
 });
 
 require __DIR__.'/auth.php';
