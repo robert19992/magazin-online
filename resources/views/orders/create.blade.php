@@ -9,35 +9,35 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900">
-                @if ($errors->any())
-                    <div class="mb-4">
-                        <div class="font-medium text-red-600">
-                            {{ __('Ups! Au apărut următoarele erori:') }}
-                        </div>
+                    @if ($errors->any())
+                        <div class="mb-4">
+                            <div class="font-medium text-red-600">
+                                {{ __('Ups! Au apărut următoarele erori:') }}
+                            </div>
 
-                        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                            <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                 <form method="POST" action="{{ route('orders.store') }}" id="order-form" class="space-y-6">
-                @csrf
-                
-                    <!-- Selectare furnizor -->
+                    @csrf
+                    
+                        <!-- Selectare furnizor -->
                     <div>
-                        <x-input-label for="supplier_id" :value="__('Furnizor')" />
-                        <select id="supplier_id" name="supplier_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                            <option value="">Selectează furnizor</option>
+                            <x-input-label for="supplier_id" :value="__('Furnizor')" />
+                            <select id="supplier_id" name="supplier_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option value="">Selectează furnizor</option>
                             @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
-                                    {{ $supplier->company_name }}
-                                </option>
+                                    <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                                        {{ $supplier->company_name }}
+                                    </option>
                             @endforeach
                         </select>
-                        <x-input-error class="mt-2" :messages="$errors->get('supplier_id')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('supplier_id')" />
                     </div>
 
                     <!-- Container pentru produse - inițial ascuns -->
@@ -47,16 +47,16 @@
                         <!-- Caută produse -->
                         <div class="flex space-x-2">
                             <input type="text" id="search-products" placeholder="Caută produse..." class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        </div>
+                                    </div>
                         
                         <!-- Lista de produse disponibile -->
                         <div id="products-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <!-- Produsele vor fi încărcate dinamic -->
                             <div class="text-center py-8 text-gray-500">
                                 Selectați un furnizor pentru a vedea produsele
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
                     <!-- Coș cumpărături - va fi afișat după ce utilizatorul adaugă produse -->
                     <div id="cart-section" class="hidden space-y-4">
@@ -104,19 +104,19 @@
                         </div>
                     </div>
 
-                    <!-- Note -->
-                    <div>
-                        <x-input-label for="notes" :value="__('Note')" />
-                        <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('notes') }}</textarea>
-                        <x-input-error class="mt-2" :messages="$errors->get('notes')" />
-                    </div>
+                        <!-- Note -->
+                        <div>
+                            <x-input-label for="notes" :value="__('Note')" />
+                            <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('notes') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('notes')" />
+                        </div>
 
-                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4">
                         <x-primary-button id="submit-order" disabled>{{ __('Plasează comanda') }}</x-primary-button>
-                        <a href="{{ route('orders.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                            {{ __('Anulează') }}
-                        </a>
-                    </div>
+                            <a href="{{ route('orders.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                {{ __('Anulează') }}
+                            </a>
+                        </div>
                 </form>
             </div>
         </div>

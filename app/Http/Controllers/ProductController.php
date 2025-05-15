@@ -155,7 +155,7 @@ class ProductController extends Controller
             
             // Debug - scrie în log headerele detectate
             Log::info('CSV Headers detectate:', isset($headers) ? $headers : ['No headers detected']);
-            
+
             $records = $csv->getRecords();
             $imported = 0;
             $updated = 0;
@@ -277,7 +277,7 @@ class ProductController extends Controller
 
                 $data = $validator->validated();
                 $data['supplier_id'] = auth()->id();
-                
+
                 // Generăm automat SKU din cod_produs
                 $data['sku'] = $data['cod_produs'] . '-' . time() . '-' . $index;
 

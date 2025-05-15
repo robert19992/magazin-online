@@ -33,43 +33,43 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Cod produs -->
-                            <div>
+                        <div>
                                 <x-input-label for="cod_produs" :value="__('Cod produs')" />
                                 <x-text-input id="cod_produs" name="cod_produs" type="text" class="mt-1 block w-full" :value="old('cod_produs', $product->cod_produs)" required />
                                 <p class="mt-1 text-sm text-gray-500">Codul produsului trebuie să fie unic în catalog.</p>
                                 <x-input-error class="mt-2" :messages="$errors->get('cod_produs')" />
-                            </div>
+                        </div>
 
-                            <!-- Descriere -->
-                            <div>
+                        <!-- Descriere -->
+                        <div>
                                 <x-input-label for="description" :value="__('Descriere')" />
                                 <x-text-input id="description" name="description" type="text" class="mt-1 block w-full" :value="old('description', $product->description)" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('description')" />
-                            </div>
+                        </div>
 
                             <!-- Producător Mașină -->
-                            <div>
+                        <div>
                                 <x-input-label for="manufacturer" :value="__('Producător Mașină')" />
                                 <x-text-input id="manufacturer" name="manufacturer" type="text" class="mt-1 block w-full" :value="old('manufacturer', $product->manufacturer)" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('manufacturer')" />
-                            </div>
+                        </div>
 
                             <!-- Greutate (kg) -->
-                            <div>
+                        <div>
                                 <x-input-label for="weight" :value="__('Greutate (kg)')" />
                                 <x-text-input id="weight" name="weight" type="number" step="0.01" class="mt-1 block w-full" :value="old('weight', $product->weight)" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('weight')" />
-                            </div>
+                        </div>
 
-                            <!-- Preț -->
-                            <div>
+                        <!-- Preț -->
+                        <div>
                                 <x-input-label for="price" :value="__('Preț (RON)')" />
                                 <x-text-input id="price" name="price" type="number" step="0.01" class="mt-1 block w-full" :value="old('price', $product->price)" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('price')" />
-                            </div>
+                        </div>
 
-                            <!-- Stoc -->
-                            <div>
+                        <!-- Stoc -->
+                        <div>
                                 <x-input-label for="stock" :value="__('Stoc')" />
                                 <x-text-input id="stock" name="stock" type="number" class="mt-1 block w-full" :value="old('stock', $product->stock)" required />
                                 <x-input-error class="mt-2" :messages="$errors->get('stock')" />

@@ -71,12 +71,8 @@
                                             {{ $order->created_at->format('d.m.Y H:i') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                                   ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
-                                                   ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                                   'bg-red-100 text-red-800')) }}">
-                                                {{ ucfirst($order->status) }}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order->getStatusColorClass() }}">
+                                                {{ $order->getStatusText() }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -88,17 +84,17 @@
                                                 <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <input type="hidden" name="status" value="processing">
+                                                    <input type="hidden" name="status" value="active">
                                                     <button type="submit" class="text-blue-600 hover:text-blue-900 mr-3">
                                                         Procesează
                                                     </button>
                                                 </form>
                                             @endif
-                                            @if(auth()->user()->isSupplier() && $order->status === 'processing')
+                                            @if(auth()->user()->isSupplier() && $order->status === 'active')
                                                 <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <input type="hidden" name="status" value="completed">
+                                                    <input type="hidden" name="status" value="delivered">
                                                     <button type="submit" class="text-green-600 hover:text-green-900">
                                                         Marchează ca livrat
                                                     </button>

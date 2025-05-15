@@ -14,9 +14,9 @@ class Order extends Model
 
     // Constante
     const STATUS_PENDING = 'pending';     // Comandă în așteptare
-    const STATUS_PROCESSING = 'processing'; // Comandă în procesare
-    const STATUS_COMPLETED = 'completed';   // Comandă finalizată
-    const STATUS_CANCELLED = 'cancelled';   // Comandă anulată
+    const STATUS_ACTIVE = 'active';       // Comandă activă (procesată de furnizor)
+    const STATUS_DELIVERED = 'delivered'; // Comandă livrată
+    const STATUS_CANCELLED = 'cancelled'; // Comandă anulată
 
     /**
      * Atributele care pot fi completate în masă
@@ -68,28 +68,28 @@ class Order extends Model
     }
 
     /**
-     * Actualizează starea comenzii la "în procesare"
+     * Actualizează starea comenzii la "activă"
      */
-    public function process(): bool
+    public function activate(): bool
     {
         if ($this->status !== self::STATUS_PENDING) {
             return false;
         }
 
-        $this->status = self::STATUS_PROCESSING;
+        $this->status = self::STATUS_ACTIVE;
         return $this->save();
     }
 
     /**
-     * Actualizează starea comenzii la "finalizată"
+     * Marchează comanda ca livrată
      */
-    public function complete(): bool
+    public function markAsDelivered(): bool
     {
-        if ($this->status !== self::STATUS_PROCESSING) {
+        if ($this->status !== self::STATUS_ACTIVE) {
             return false;
         }
 
-        $this->status = self::STATUS_COMPLETED;
+        $this->status = self::STATUS_DELIVERED;
         return $this->save();
     }
 
@@ -111,7 +111,7 @@ class Order extends Model
      */
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING]);
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_ACTIVE]);
     }
 
     /**
@@ -130,8 +130,8 @@ class Order extends Model
     {
         return match($this->status) {
             self::STATUS_PENDING => 'bg-yellow-100 text-yellow-800',
-            self::STATUS_PROCESSING => 'bg-blue-100 text-blue-800',
-            self::STATUS_COMPLETED => 'bg-green-100 text-green-800',
+            self::STATUS_ACTIVE => 'bg-blue-100 text-blue-800',
+            self::STATUS_DELIVERED => 'bg-green-100 text-green-800',
             self::STATUS_CANCELLED => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
@@ -144,8 +144,8 @@ class Order extends Model
     {
         $statuses = [
             self::STATUS_PENDING => __('În așteptare'),
-            self::STATUS_PROCESSING => __('În procesare'),
-            self::STATUS_COMPLETED => __('Finalizată'),
+            self::STATUS_ACTIVE => __('Activă'),
+            self::STATUS_DELIVERED => __('Livrată'),
             self::STATUS_CANCELLED => __('Anulată'),
         ];
 

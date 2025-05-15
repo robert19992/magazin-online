@@ -95,7 +95,7 @@
                             {{ __('Descarcă un template CSV pentru a vedea formatul corect al datelor.') }}
                         </p>
                         <a href="{{ route('products.template.download') }}" 
-                            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                           class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
                             {{ __('Descarcă Template CSV') }}
                         </a>
                     </div>

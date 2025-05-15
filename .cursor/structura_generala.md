@@ -75,6 +75,8 @@ In aceasta pagina clientul isi poate gestiona furnizorii cu care a format o rela
 
 furnizor:
 autoparts@test.com 68211621be741
+dacia@test.com 682620a4ebfd1
 
 client
 client1@test.com  6821176f95cb9
+client2025@test.com 682620dfbc7a9

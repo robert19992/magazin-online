@@ -20,7 +20,7 @@
                                     @if (strpos($error, 'cod_produs has already been taken') !== false)
                                         <li>Codul de produs introdus există deja în catalog.</li>
                                     @else
-                                        <li>{{ $error }}</li>
+                                    <li>{{ $error }}</li>
                                     @endif
                                 @endforeach
                             </ul>

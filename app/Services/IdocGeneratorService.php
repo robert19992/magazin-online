@@ -616,11 +616,11 @@ class IdocGeneratorService
                 
                 try {
                     // Creem directorul recursiv cu permisiuni 0755
-                    if (!mkdir($directory, 0755, true)) {
+                if (!mkdir($directory, 0755, true)) {
                         $error = error_get_last();
                         $this->logError("Nu s-a putut crea directorul: $directory. Eroare: " . ($error['message'] ?? 'Necunoscută'));
-                        throw new \Exception("Nu s-a putut crea directorul: $directory");
-                    }
+                    throw new \Exception("Nu s-a putut crea directorul: $directory");
+                }
                     
                     // Verificăm permisiunile și le corectăm dacă e nevoie
                     chmod($directory, 0755);

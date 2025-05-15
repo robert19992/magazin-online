@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use App\Http\Livewire\CreateOrder;
+use App\Services\IdocXmlGeneratorService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(IdocXmlGeneratorService::class, function ($app) {
+            return new IdocXmlGeneratorService();
+        });
     }
 
     /**

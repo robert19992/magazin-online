@@ -12,19 +12,29 @@
                     <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
                         @csrf
                         @method('PATCH')
-                        <input type="hidden" name="status" value="processing">
+                        <input type="hidden" name="status" value="active">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             {{ __('Procesează comanda') }}
                         </button>
                     </form>
                 @endif
-                @if(auth()->user()->isSupplier() && $order->status === 'processing')
+                @if(auth()->user()->isSupplier() && $order->status === 'active')
                     <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
                         @csrf
                         @method('PATCH')
-                        <input type="hidden" name="status" value="completed">
+                        <input type="hidden" name="status" value="delivered">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 focus:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             {{ __('Marchează ca livrat') }}
+                        </button>
+                    </form>
+                @endif
+                @if($order->status !== 'cancelled' && $order->status !== 'delivered' && (auth()->user()->isSupplier() || (auth()->user()->isClient() && $order->status === 'pending')))
+                    <form action="{{ route('orders.update-status', $order) }}" method="POST" class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="cancelled">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            {{ __('Anulează comanda') }}
                         </button>
                     </form>
                 @endif
@@ -44,12 +54,8 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">{{ __('Status') }}</dt>
                                     <dd class="mt-1">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                               ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
-                                               ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                               'bg-red-100 text-red-800')) }}">
-                                            {{ ucfirst($order->status) }}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order->getStatusColorClass() }}">
+                                            {{ $order->getStatusText() }}
                                         </span>
                                     </dd>
                                 </div>

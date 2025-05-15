@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Organization;
 use App\Services\IdocService;
 use App\Services\IdocGeneratorService;
+use App\Services\IdocXmlGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,11 +18,16 @@ class OrderController extends Controller
 {
     protected $idocService;
     protected $idocGeneratorService;
+    protected $idocXmlGeneratorService;
 
-    public function __construct(IdocService $idocService, IdocGeneratorService $idocGeneratorService)
-    {
+    public function __construct(
+        IdocService $idocService, 
+        IdocGeneratorService $idocGeneratorService,
+        IdocXmlGeneratorService $idocXmlGeneratorService
+    ) {
         $this->idocService = $idocService;
         $this->idocGeneratorService = $idocGeneratorService;
+        $this->idocXmlGeneratorService = $idocXmlGeneratorService;
         $this->middleware('auth');
     }
 
@@ -151,6 +157,15 @@ class OrderController extends Controller
             
             Log::info('Total comandă actualizat: ' . $total);
             
+            // Generăm IDOC XML pentru comandă
+            try {
+                $idocFilePath = $this->idocXmlGeneratorService->generateOrderIdoc($order);
+                Log::info('IDOC XML generat pentru comanda: ' . $orderNumber, ['file_path' => $idocFilePath]);
+            } catch (\Exception $e) {
+                Log::error('Eroare la generarea IDOC XML: ' . $e->getMessage());
+                // Continuăm chiar dacă generarea XML eșuează
+            }
+            
             // Generăm documentele pentru comandă, dacă serviciul este disponibil
             if (method_exists($this->idocGeneratorService, 'generatePlacedOrderDocuments')) {
                 try {
@@ -272,7 +287,7 @@ class OrderController extends Controller
      */
     public function confirm(Order $order)
     {
-        if (!auth()->user()->isSupplier() || $order->supplier_id !== auth()->id()) {
+        if (!Auth::user()->isSupplier() || $order->supplier_id !== Auth::id()) {
             abort(403);
         }
 
@@ -318,7 +333,7 @@ class OrderController extends Controller
     public function cancel(Order $order)
     {
         // Verificăm dacă utilizatorul are dreptul să anuleze comanda
-        if (auth()->user()->isClient() && $order->client_id !== auth()->id()) {
+        if (Auth::user()->isClient() && $order->client_id !== Auth::id()) {
             abort(403);
         }
 
@@ -359,7 +374,7 @@ class OrderController extends Controller
      */
     private function generateOrderNumber()
     {
-        $prefix = auth()->user()->isClient() ? 'ORD' : 'RFQ';
+        $prefix = Auth::user()->isClient() ? 'ORD' : 'RFQ';
         $timestamp = now()->format('YmdHis');
         $random = str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
         
@@ -368,50 +383,74 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        // Adăugăm log pentru depanare
+        Log::info('Cerere updateStatus primită', [
+            'method' => $request->method(),
+            'order_id' => $order->id,
+            'status' => $request->status,
+            'route' => $request->route()->getName(),
+            'user_id' => Auth::id()
+        ]);
+
         $this->authorize('update', $order);
 
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:processing,completed,cancelled'],
+            'status' => ['required', 'string', 'in:active,delivered,cancelled'],
         ]);
 
         try {
             DB::beginTransaction();
 
             switch ($validated['status']) {
-                case 'processing':
-                    if (!$order->process()) {
-                        throw new \Exception('Comanda nu poate fi procesată.');
+                case 'active':
+                    if (!$order->activate()) {
+                        throw new \Exception('Comanda nu poate fi activată.');
                     }
                     break;
-                case 'completed':
-                    if (!$order->complete()) {
-                        throw new \Exception('Comanda nu poate fi finalizată.');
+                case 'delivered':
+                    if (!$order->markAsDelivered()) {
+                        throw new \Exception('Comanda nu poate fi marcată ca livrată.');
+                    }
+                    
+                    // Generăm IDOC XML pentru livrare
+                    try {
+                        $order->load(['client', 'supplier', 'items.product']);
+                        $idocFilePath = $this->idocXmlGeneratorService->generateDeliveryIdoc($order);
+                        Log::info('IDOC XML de livrare generat pentru comanda: ' . $order->id, ['file_path' => $idocFilePath]);
+                    } catch (\Exception $e) {
+                        Log::error('Eroare la generarea IDOC XML de livrare: ' . $e->getMessage());
+                        // Continuăm chiar dacă generarea XML eșuează
                     }
                     break;
                 case 'cancelled':
                     if (!$order->cancel()) {
                         throw new \Exception('Comanda nu poate fi anulată.');
-                }
+                    }
                     // Returnăm produsele în stoc
-                foreach ($order->items as $item) {
+                    foreach ($order->items as $item) {
                         $item->product->updateStock($item->quantity);
-                }
+                    }
                     break;
             }
 
             DB::commit();
 
-        return redirect()->route('orders.show', $order)
+            return redirect()->route('orders.show', $order)
                 ->with('success', 'Statusul comenzii a fost actualizat.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Eroare la actualizarea statusului comenzii', [
+                'order_id' => $order->id,
+                'status' => $request->status,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', $e->getMessage());
         }
     }
 
     public function export(Request $request)
     {
-        $orders = Order::forSupplier(auth()->id())
+        $orders = Order::forSupplier(Auth::id())
             ->with(['customer', 'items.product'])
             ->when($request->status, function ($query, $status) {
                 return $query->byStatus($status);
@@ -434,8 +473,8 @@ class OrderController extends Controller
     {
         $this->authorize('update', $order);
 
-        if ($order->status !== 'activa' && $order->status !== Order::STATUS_CONFIRMED && $order->status !== Order::STATUS_SHIPPED) {
-            return back()->withErrors(['error' => 'Doar comenzile active, confirmate sau expediate pot fi marcate ca livrate.']);
+        if ($order->status !== 'activa' && $order->status !== 'active') {
+            return back()->withErrors(['error' => 'Doar comenzile active pot fi marcate ca livrate.']);
         }
 
         try {
@@ -447,6 +486,16 @@ class OrderController extends Controller
             
             if ($result === false) {
                 throw new \Exception('Eroare la marcarea comenzii ca livrată.');
+            }
+            
+            // Generăm IDOC XML pentru livrare
+            try {
+                $order->load(['client', 'supplier', 'items.product']);
+                $idocFilePath = $this->idocXmlGeneratorService->generateDeliveryIdoc($order);
+                Log::info('IDOC XML de livrare generat pentru comanda: ' . $order->id, ['file_path' => $idocFilePath]);
+            } catch (\Exception $e) {
+                Log::error('Eroare la generarea IDOC XML de livrare: ' . $e->getMessage());
+                // Continuăm chiar dacă generarea XML eșuează
             }
             
             DB::commit();
@@ -471,14 +520,8 @@ class OrderController extends Controller
      */
     public function report(Request $request)
     {
-        // Obține statisticile generale
-        $totalOrders = Order::where('client_id', Auth::id())->count();
-        $activeOrders = Order::where('client_id', Auth::id())->where('status', 'active')->count();
-        $pendingOrders = Order::where('client_id', Auth::id())->where('status', 'pending')->count();
-        $deliveredOrders = Order::where('client_id', Auth::id())->where('status', 'delivered')->count();
-
         // Construiește query-ul pentru comenzi cu filtrare
-        $query = Order::with(['supplier', 'items.product'])
+        $query = Order::with(['supplier', 'supplier.organization', 'items.product'])
             ->where('client_id', Auth::id());
 
         // Aplică filtrele
@@ -494,15 +537,109 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        // Obține comenzile pentru statistici generale
+        $allOrders = Order::where('client_id', Auth::id());
+        $totalOrders = $allOrders->count();
+        $activeOrders = Order::where('client_id', Auth::id())->where('status', 'active')->count();
+        $pendingOrders = Order::where('client_id', Auth::id())->where('status', 'pending')->count();
+        $deliveredOrders = Order::where('client_id', Auth::id())->where('status', 'delivered')->count();
+
+        // Calculează statistici valorice
+        $totalValue = Order::where('client_id', Auth::id())->sum('total_amount');
+        $averageValue = $totalOrders > 0 ? $totalValue / $totalOrders : 0;
+
+        // Perioada de activitate
+        $firstOrder = Order::where('client_id', Auth::id())->oldest('created_at')->first();
+        $lastOrder = Order::where('client_id', Auth::id())->latest('created_at')->first();
+        
+        $firstOrderDate = $firstOrder ? $firstOrder->created_at->format('d.m.Y') : 'N/A';
+        $lastOrderDate = $lastOrder ? $lastOrder->created_at->format('d.m.Y') : 'N/A';
+
+        // Produse comandate frecvent
+        $topProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->select(
+                'products.id',
+                'products.cod_produs',
+                'products.description',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.quantity * order_items.price) as total_value'),
+                DB::raw('COUNT(DISTINCT orders.id) as order_count')
+            )
+            ->where('orders.client_id', Auth::id())
+            ->groupBy('products.id', 'products.cod_produs', 'products.description')
+            ->orderBy('order_count', 'desc')
+            ->orderBy('total_quantity', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Date pentru graficul lunar
+        $monthlyData = $this->getMonthlyOrderData();
+
         // Ordonează și paginează rezultatele
-        $orders = $query->latest()->paginate(10);
+        $orders = $query->withCount('items')->latest()->paginate(10);
 
         return view('orders.report', compact(
             'orders',
             'totalOrders',
             'activeOrders',
             'pendingOrders',
-            'deliveredOrders'
+            'deliveredOrders',
+            'totalValue',
+            'averageValue',
+            'firstOrderDate',
+            'lastOrderDate',
+            'topProducts',
+            'monthlyData'
         ));
+    }
+    
+    /**
+     * Obține date pentru graficul de comenzi lunare
+     */
+    private function getMonthlyOrderData()
+    {
+        // Obținem ultimele 12 luni
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $endDate = now()->endOfMonth();
+        
+        $monthlyOrders = DB::table('orders')
+            ->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total_amount) as total_value'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->where('client_id', Auth::id())
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate)
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+        
+        $labels = [];
+        $values = [];
+        
+        // Creăm un array pentru toate lunile din ultimul an
+        $currentDate = $startDate->copy();
+        while ($currentDate <= $endDate) {
+            $yearMonth = $currentDate->format('Y-m');
+            $labels[] = $currentDate->format('M Y');
+            $values[$yearMonth] = 0;
+            $currentDate->addMonth();
+        }
+        
+        // Populăm datele reale
+        foreach ($monthlyOrders as $order) {
+            $yearMonth = sprintf('%04d-%02d', $order->year, $order->month);
+            $values[$yearMonth] = (float) $order->total_value;
+        }
+        
+        return [
+            'labels' => $labels,
+            'values' => array_values($values)
+        ];
     }
 }

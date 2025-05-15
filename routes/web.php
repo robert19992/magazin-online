@@ -47,21 +47,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
+    // Rute pentru raport comenzi - accesibile doar clienților
+    Route::middleware([ClientMiddleware::class])->group(function () {
+        Route::get('/orders/report', [OrderController::class, 'report'])->name('orders.report');
+        Route::post('orders/{order}/deliver', [OrderController::class, 'markAsDelivered'])->name('orders.deliver');
+    });
+
     Route::resource('orders', OrderController::class);
     Route::middleware([SupplierMiddleware::class])->group(function () {
-        Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status.update');
+        // Folosim doar ruta PATCH pentru actualizarea statusului comenzii
         Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
-    });
-    Route::middleware([ClientMiddleware::class])->group(function () {
-        Route::post('orders/{order}/deliver', [OrderController::class, 'markAsDelivered'])->name('orders.deliver');
     });
 
     Route::resource('connections', ConnectionController::class);
     Route::patch('connections/{connection}/status', [ConnectionController::class, 'updateStatus'])->name('connections.update-status');
-
-    // Rute pentru comenzi
-    Route::get('/orders/report', [OrderController::class, 'report'])->name('orders.report');
 
     // Rută de test pentru produsele unui furnizor
     Route::get('/test-products/{supplier}', function ($supplier) {
