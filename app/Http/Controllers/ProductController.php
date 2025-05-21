@@ -257,6 +257,11 @@ class ProductController extends Controller
                     $mappedRecord['market_date'] = $record[6]; // A șaptea coloană
                 }
                 
+                // Convertim data în formatul acceptat de MySQL (YYYY-MM-DD)
+                if (isset($mappedRecord['market_date']) && !empty($mappedRecord['market_date'])) {
+                    $mappedRecord['market_date'] = $this->convertToMySqlDate($mappedRecord['market_date']);
+                }
+                
                 Log::info('Mapped Record:', $mappedRecord);
                 
                 // Validăm datele din CSV cu aceleași reguli ca la adăugarea manuală
@@ -276,7 +281,7 @@ class ProductController extends Controller
                 }
 
                 $data = $validator->validated();
-                $data['supplier_id'] = auth()->id();
+                $data['supplier_id'] = Auth::id();
 
                 // Generăm automat SKU din cod_produs
                 $data['sku'] = $data['cod_produs'] . '-' . time() . '-' . $index;
@@ -284,7 +289,7 @@ class ProductController extends Controller
                 // Verificăm dacă există deja un produs cu acest cod
                 if ($request->update_existing) {
                     $product = Product::where('cod_produs', $data['cod_produs'])
-                        ->where('supplier_id', auth()->id())
+                        ->where('supplier_id', Auth::id())
                         ->first();
 
                     if ($product) {
@@ -384,5 +389,35 @@ class ProductController extends Controller
         }
 
         return back()->with('error', 'Nu s-a putut actualiza stocul.');
+    }
+
+    // Adăugăm o nouă metodă pentru a converti formatul datei
+    private function convertToMySqlDate($dateString)
+    {
+        // Încercăm să identificăm formatul
+        if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $dateString)) {
+            // Format MM/DD/YYYY sau DD/MM/YYYY
+            $parts = explode('/', $dateString);
+            if (count($parts) === 3) {
+                // Presupunem MM/DD/YYYY și transformăm în YYYY-MM-DD
+                return $parts[2] . '-' . str_pad($parts[0], 2, '0', STR_PAD_LEFT) . '-' . str_pad($parts[1], 2, '0', STR_PAD_LEFT);
+            }
+        } elseif (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $dateString)) {
+            // Este deja în format YYYY-MM-DD, verificăm doar dacă lunile și zilele sunt cu 0 în față
+            $parts = explode('-', $dateString);
+            if (count($parts) === 3) {
+                return $parts[0] . '-' . str_pad($parts[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($parts[2], 2, '0', STR_PAD_LEFT);
+            }
+        }
+        
+        // Încercăm să folosim DateTime pentru a converti data
+        try {
+            $date = new \DateTime($dateString);
+            return $date->format('Y-m-d');
+        } catch (\Exception $e) {
+            // În caz de eroare returnăm data curentă
+            Log::warning("Nu s-a putut converti data: " . $dateString);
+            return date('Y-m-d');
+        }
     }
 }

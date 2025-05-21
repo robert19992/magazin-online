@@ -13,10 +13,12 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.1",
         "laravel/tinker": "^2.10.1",
+        "league/csv": "^9.23",
         "livewire/livewire": "^3.6",
         "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
+        "beyondcode/laravel-er-diagram-generator": "^4.0",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.3",
         "laravel/pail": "^1.2.2",

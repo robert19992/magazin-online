@@ -43,7 +43,7 @@
                     <!-- Container pentru produse - inițial ascuns -->
                     <div id="products-section" class="hidden space-y-4">
                         <h3 class="text-lg font-medium text-gray-900">{{ __('Selectare produse') }}</h3>
-                        
+                            
                         <!-- Caută produse -->
                         <div class="flex space-x-2">
                             <input type="text" id="search-products" placeholder="Caută produse..." class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-products');
     const submitButton = document.getElementById('submit-order');
     const orderForm = document.getElementById('order-form');
-    
+
     // Variabile pentru starea aplicației
     let products = []; // Lista completă de produse
     let cart = []; // Produsele din coș
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Eroare la încărcarea produselor:', error);
                 productsList.innerHTML = `<div class="text-center py-8 text-red-500">Eroare la încărcarea produselor: ${error.message}. Încercați din nou.</div>`;
-            });
+        });
     }
     
     // Funcție pentru afișarea produselor
@@ -220,8 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-        });
-        
+    });
+
         productsList.innerHTML = html;
         
         // Adăugăm event listeners pentru butoanele "Adaugă în coș"
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (supplierSelect.value) {
         productsSection.classList.remove('hidden');
         fetchSupplierProducts(supplierSelect.value);
-    }
+                }
 });
 </script>
 @endpush

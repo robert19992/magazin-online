@@ -54,9 +54,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('orders', OrderController::class);
+    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+
     Route::middleware([SupplierMiddleware::class])->group(function () {
         // Folosim doar ruta PATCH pentru actualizarea statusului comenzii
-        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
     });
 

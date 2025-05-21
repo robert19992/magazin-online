@@ -8,4 +8,5 @@ Aplicatie practica
 	-proiectarea şi implementarea unei soluţii tehnologice pentru un magazin online 
 
 Printre aplicatiile de testare se va utiliza si HP Application LifeCycle Management (ALM) pentru testarea aplicatiei practice.
-Aplicatie realizata se va scana pentru identificarea vulnerabilitatilor cu aplicatiile Nessus si Rapid7 din Centrul CyberX. Se va realiza un raport cumulativ al rezultatelor furnizate de cele doua aplicatii 
+Aplicatie realizata se va scana pentru identificarea vulnerabilitatilor cu aplicatiile Nessus si Rapid7 din Centrul CyberX. Se va realiza un raport cumulativ al rezultatelor furnizate de cele doua aplicatii.
+

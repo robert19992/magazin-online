@@ -31,7 +31,15 @@ class OrderPolicy
 
     public function update(User $user, Order $order): bool
     {
-        return $user->isSupplier() && $order->supplier_id === $user->id;
+        if ($user->isSupplier()) {
+            return $order->supplier_id === $user->id;
+        }
+        
+        if ($user->isClient()) {
+            return $order->client_id === $user->id && in_array($order->status, ['pending', 'active']);
+        }
+        
+        return false;
     }
 
     public function delete(User $user, Order $order): bool
